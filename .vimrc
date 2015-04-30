@@ -221,6 +221,7 @@
         endfunction
 
         "去掉空格
+        func! DeleteTrailingWS()
             exe "normal mz"
             %s/\s\+$//ge
             exe "normal `z"
