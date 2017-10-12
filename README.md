@@ -6,4 +6,4 @@ sh7ne's server vim distribution.
 
 ### installation
 
-    curl http://sh7ne.sinaapp.com/tools/bootvim.sh -L > thesVimBoot.sh && sh thesVimBoot.sh
+    curl https://raw.githubusercontent.com/sh7ning/vim_thes_server/master/.vimrc -L > ~/.vimrc
