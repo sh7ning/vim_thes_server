@@ -106,7 +106,7 @@
             " 设置撤销文件的存放的目录
             set undolevels=1000
             set undoreload=10000
-            set undodir=/tmp
+            set undodir=/tmp/vim_undo
         endif
 
         " 左下角显示当前vim模式
