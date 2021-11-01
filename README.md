@@ -6,4 +6,16 @@ sh7ne's server vim distribution.
 
 ### installation
 
-    curl https://raw.githubusercontent.com/sh7ning/vim_thes_server/master/.vimrc -L > ~/.vimrc && mkdir /tmp/vim_undo
+1. backup your old .vimrc if it is necessary
+
+```
+cp ~/.vimrc ~/.vimrc_bak
+```
+
+2. install .vimrc
+
+```
+curl https://raw.githubusercontent.com/sh7ning/vim_thes_server/master/.vimrc -L > ~/.vimrc && mkdir ~/.vim_undo
+```
+
+3. Enjoy it ^_^ 😊
