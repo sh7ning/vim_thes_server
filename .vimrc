@@ -173,6 +173,10 @@
         highlight clear LineNr
         " Remove highlight color from current line number
         "highlight clear CursorLineNr
+        " if &diff
+        "    colorscheme murphy
+        "    " syntax off
+        " endif
     " "}
 
     " Map hot key and setup Plugin {
