@@ -8,7 +8,7 @@
 " Environment {
 
     " Basics {
-        "格式化高亮（vim-tiny 可能未编译 syntax 支持）
+        "启用语法高亮（vim-tiny 可能未编译 syntax 支持）
         if has('syntax')
             syntax on
         endif
@@ -30,7 +30,7 @@
         set termencoding=utf-8
         "Vim 打开文件时的尝试使用的编码
         set fileencodings=ucs-bom,utf-8,cp936,gb18030,big5,euc-jp,euc-kr,latin1
-        " Use Unix as the standard file type
+        " 设置读写文件时优先使用的换行格式顺序：unix、dos、mac
         set ffs=unix,dos,mac
         " 鼠标暂不启用
         set mouse-=a
@@ -59,7 +59,7 @@
         set shiftwidth=4
         " 按退格键时可以一次删掉 4 个空格
         set softtabstop=4
-        " insert tabs on the start of a line according to shiftwidth, not tabstop 按退格键时可以一次删掉 4 个空格
+        " 行首插入 Tab 时按 shiftwidth 计算缩进宽度
         set smarttab
         " 将Tab自动转化成空格    [需要输入真正的Tab键时，使用 Ctrl+V + Tab]
         set expandtab
@@ -90,8 +90,9 @@
         "set shortmess=atI
         set shortmess+=filmnrxoOtT
 
-        " 保留搜索高亮与增量搜索，方便定位关键字和排查问题
+        " 保留搜索高亮，方便定位关键字和排查问题
         set hlsearch
+        " 关闭增量搜索，避免输入搜索模式时频繁跳转
         set noincsearch
         " 搜索到文件末尾后不从文件开头继续，避免误判匹配位置
         set nowrapscan
@@ -162,7 +163,7 @@
 
         if has('cmdline_info')
             set ruler
-            ""在状态栏显示正在输入的命令
+            "在状态栏显示正在输入的命令
             set showcmd
         endif
 
@@ -207,21 +208,21 @@
         " 默认主题
         silent! colorscheme pablo
         "colorscheme elflord
-        "编辑区背景色 启用
+        " 编辑区背景色 启用
         silent! hi Normal guibg=#99cc99 guifg=Black
-        "光标所在行背景色 启用
+        " 光标所在行背景色 启用
         silent! hi CursorLine guibg=#2d2d2d ctermbg=236 cterm=none
         "hi CursorLine cterm=NONE ctermbg=darkred guibg=#66cc99 guifg=black ctermfg=white
-        "行号背景色
+        " 行号背景色
         silent! hi LineNr guibg=#003366 guifg=#99ccff ctermbg=7777 ctermfg=blue
         " 老终端回退到 256 色
         if !has('termguicolors')
             set t_Co=256
         endif
 
-        " SignColumn should match background
+        " 清除 SignColumn 自定义高亮，回退到主题默认效果
         silent! highlight clear SignColumn
-        " Current line number row will have same background color in relative mode
+        " 清除 LineNr 自定义高亮，回退到主题默认效果
         silent! highlight clear LineNr
         " Remove highlight color from current line number
         "highlight clear CursorLineNr
@@ -231,12 +232,12 @@
         " endif
     " }
 
-    " Map hot key and setup Plugin {
+    " Keymaps And Helpers {
         " 修改leader键 key
         let mapleader = ','
         let g:mapleader = ','
 
-        "粘贴时候防止格式错乱 key
+        " 切换 paste 模式，避免粘贴时自动缩进打乱格式
         set pastetoggle=<F4>
         "php语法检测，因为安装了语法插件，所以不启用，如插件无效，可以手动开启
         "map <F3> :!php -l % <CR>
@@ -256,9 +257,9 @@
                 autocmd!
                 " 定义函数AutoSetFileHead，自动插入文件头
                 autocmd BufNewFile *.sh,*.php call AutoSetFileHead()
-                " 打开文件为上次打开的位置 if this not work ,make sure .viminfo is writable for you
+                " 打开文件时跳回上次退出的位置
                 autocmd BufReadPost * if line("'\"") > 1 && line("'\"") <= line("$") | exe "normal! g'\"" | endif
-                "配置文件.vimrc更改后自动重新载入使设置生效
+                " 保存 .vimrc 后自动重新加载配置
                 autocmd BufWritePost .vimrc source ~/.vimrc
             augroup END
         endif
