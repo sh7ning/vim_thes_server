@@ -14,6 +14,10 @@
         endif
         "禁用VI兼容模式
         set nocompatible
+
+        " 仅区分 macOS / Linux，不考虑 Windows
+        let g:is_macos = has('macunix')
+        let g:is_linux = has('unix') && !g:is_macos
     " }
 
     " General {
@@ -36,16 +40,17 @@
         "依据上面的对齐格式
         set smartindent
         set cindent
-        "自动换行
-        set wrap
-        "set nowrap 取消换行
+        " 按服务器/日志文件场景处理，默认不自动换行
+        set nowrap
         "不在单词中间断行
         set lbr
         set tw=0
         " smart backspace
         set backspace=start,indent,eol
-        " No extra spaces between rows
-        set linespace=0
+        " GUI 下的行间距；仅在 macOS 图形界面下设置，Linux 终端无需此项
+        if g:is_macos && has('gui_running') && exists('+linespace')
+            set linespace=0
+        endif
 
         " tab相关变更
         " 设置Tab键的宽度        [等同的空格个数]
@@ -68,18 +73,28 @@
         " 在上下移动光标时，光标的上方或下方至少会保留显示的行数
         set scrolloff=7
 
+        " 固定行号列宽，避免文件行数变化时文本左右抖动
+        if exists('+numberwidth')
+            set numberwidth=4
+        endif
+
         " history存储行数
         set history=200
+        " 执行有风险的操作时给出确认提示，减少误关闭和误覆盖
+        if exists('+confirm')
+            set confirm
+        endif
         "文件被外部修改，自动读入
         set autoread
         " 启动的时候不显示那个援助索马里儿童的提示
         "set shortmess=atI
         set shortmess+=filmnrxoOtT
 
-        " 检索时高亮显示匹配项
+        " 保留搜索高亮与增量搜索，方便定位关键字和排查问题
         set hlsearch
-        " 打开增量搜索模式,随着键入即时搜索
-        set incsearch
+        set noincsearch
+        " 搜索到文件末尾后不从文件开头继续，避免误判匹配位置
+        set nowrapscan
         " 搜索时忽略大小写
         set ignorecase
         " 有一个或以上大写字母时仍大小写敏感
@@ -102,15 +117,26 @@
         " 超长行仅高亮前 N 列，提升大文件性能
         set synmaxcol=240
 
+        " 不自动延续注释，避免回车时无意插入注释前缀
+        if exists('+formatoptions')
+            set formatoptions-=r
+            set formatoptions-=o
+            set formatoptions-=c
+        endif
+
         "没有保存的缓冲区可以自动被隐藏
         set hidden
         set ttyfast
 
-        " 系统剪贴板联动（macOS 系统剪贴板 / Linux X11·Wayland 剪贴板）
-        " unnamed 对应 '*'（macOS 剪贴板 / X11 PRIMARY），unnamedplus 对应 '+'（X11 CLIPBOARD）
-        " Linux vim-tiny 通常未编译 +clipboard，此处 has() 防护可安全跳过
+        " 系统剪贴板联动
+        " macOS 下 '*' 和 '+' 最终都会落到系统剪贴板，使用 unnamed 即可
+        " Linux 仅在图形环境（X11/Wayland）下启用 unnamedplus，避免无头服务器误判
         if has('clipboard')
-            set clipboard=unnamed,unnamedplus
+            if g:is_macos
+                set clipboard=unnamed
+            elseif g:is_linux && (!empty($DISPLAY) || !empty($WAYLAND_DISPLAY))
+                set clipboard=unnamedplus
+            endif
         endif
 
         " 取消备份
@@ -156,6 +182,11 @@
         "让分屏出现在下侧
         set splitbelow
 
+        " 始终预留符号列，减少诊断/标记出现时文本左右跳动
+        if exists('+signcolumn')
+            set signcolumn=yes
+        endif
+
         " 自动补全配置
         "让Vim的补全菜单行为与一般IDE一致(参考VimTip1228)
         "set wildmode=list:longest,full
@@ -173,15 +204,7 @@
         "set cursorcolumn
 
         set background=dark
-        " 现代终端（iTerm2/Apple Terminal）优先使用真彩
-        " 如果在 tmux 中使用，需要设置 t_8f/t_8b 转义序列
-        if has('termguicolors')
-            if !empty($TMUX)
-                let &t_8f = "\<Esc>[38;2;%lu;%lu;%lum"
-                let &t_8b = "\<Esc>[48;2;%lu;%lu;%lum"
-            endif
-            set termguicolors
-        endif
+
         " 默认主题（silent! 防止极简安装缺少该 colorscheme）
         silent! colorscheme pablo
         "colorscheme elflord
@@ -207,7 +230,7 @@
         "    colorscheme murphy
         "    " syntax off
         " endif
-    " "}
+    " }
 
     " Map hot key and setup Plugin {
         " 修改leader键 key
@@ -230,15 +253,15 @@
     " }
     " Other {
         if has('autocmd')
-        augroup vimrc_auto_commands
-            autocmd!
-            " 定义函数AutoSetFileHead，自动插入文件头
-            autocmd BufNewFile *.sh,*.php call AutoSetFileHead()
-            " 打开文件为上次打开的位置 if this not work ,make sure .viminfo is writable for you
-            autocmd BufReadPost * if line("'\"") > 1 && line("'\"") <= line("$") | exe "normal! g'\"" | endif
-            "配置文件.vimrc更改后自动重新载入使设置生效
-            autocmd BufWritePost .vimrc source ~/.vimrc
-        augroup END
+            augroup vimrc_auto_commands
+                autocmd!
+                " 定义函数AutoSetFileHead，自动插入文件头
+                autocmd BufNewFile *.sh,*.php call AutoSetFileHead()
+                " 打开文件为上次打开的位置 if this not work ,make sure .viminfo is writable for you
+                autocmd BufReadPost * if line("'\"") > 1 && line("'\"") <= line("$") | exe "normal! g'\"" | endif
+                "配置文件.vimrc更改后自动重新载入使设置生效
+                autocmd BufWritePost .vimrc source ~/.vimrc
+            augroup END
         endif
 
         function! AutoSetFileHead()
@@ -261,14 +284,14 @@
         " 删除行尾^M符号
         " 如果是很多行合并为一行了用 %s/\r/\r/g
         function! StripTrailingBr()  
-            exec "%s/\r//g"
+            silent! keepjumps keeppatterns %s/\r//g
         endfunction
 
         "去掉空格
         function! DeleteTrailingWS()
-            exe "normal mz"
-            %s/\s\+$//ge
-            exe "normal `z"
+            let l:save_view = winsaveview()
+            silent! keepjumps keeppatterns %s/\s\+$//ge
+            call winrestview(l:save_view)
         endfunction
     " }
 
