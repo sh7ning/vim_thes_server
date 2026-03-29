@@ -8,8 +8,10 @@
 " Environment {
 
     " Basics {
-        "格式化高亮
-        syntax on
+        "格式化高亮（vim-tiny 可能未编译 syntax 支持）
+        if has('syntax')
+            syntax on
+        endif
         "禁用VI兼容模式
         set nocompatible
     " }
@@ -89,11 +91,27 @@
         set noerrorbells
         set novisualbell
         set t_vb=
-        set tm=500
+        " CursorHold 触发等待时间，降低后插件/状态刷新更及时
+        set updatetime=300
+        " 映射按键超时时间，降低后组合键响应更快（原 tm=500）
+        set timeoutlen=500
+        " 终端按键码超时时间，避免 ESC 等待过久
+        set ttimeoutlen=10
+        " 宏执行/批量操作时不重绘，减少卡顿
+        set lazyredraw
+        " 超长行仅高亮前 N 列，提升大文件性能
+        set synmaxcol=240
 
         "没有保存的缓冲区可以自动被隐藏
         set hidden
         set ttyfast
+
+        " 系统剪贴板联动（macOS 系统剪贴板 / Linux X11·Wayland 剪贴板）
+        " unnamed 对应 '*'（macOS 剪贴板 / X11 PRIMARY），unnamedplus 对应 '+'（X11 CLIPBOARD）
+        " Linux vim-tiny 通常未编译 +clipboard，此处 has() 防护可安全跳过
+        if has('clipboard')
+            set clipboard=unnamed,unnamedplus
+        endif
 
         " 取消备份
         set nobackup
@@ -107,6 +125,10 @@
             set undolevels=1000
             set undoreload=10000
             set undodir=~/.vim_undo
+            " 首次启动自动创建撤销目录，避免 undofile 失效
+            if !isdirectory(expand('~/.vim_undo'))
+                call mkdir(expand('~/.vim_undo'), 'p')
+            endif
         endif
 
         " 左下角显示当前vim模式
@@ -124,14 +146,10 @@
             set statusline=%<%f\ %h%m%r%=%k[%{(&fenc==\"\")?&enc:&fenc}%{(&bomb?\",BOM\":\"\")}]\ %-14.(%l,%c%V%)\ %P
         endif
 
-        "检测文件类型
-        filetype on
-        "" 针对不同的文件类型采用不同的缩进格式
-        filetype indent on
-        "允许插件
-        filetype plugin on
-        ""启动自动补全
-        filetype plugin indent on
+        "检测文件类型 + 插件 + 缩进（vim-tiny 可能未编译 autocmd 支持）
+        if has('autocmd')
+            filetype plugin indent on
+        endif
 
         "让分屏出现在右侧vsp
         set splitright
@@ -155,22 +173,34 @@
         "set cursorcolumn
 
         set background=dark
-        " 默认主题
-        colorscheme pablo
+        " 现代终端（iTerm2/Apple Terminal）优先使用真彩
+        " 如果在 tmux 中使用，需要设置 t_8f/t_8b 转义序列
+        if has('termguicolors')
+            if !empty($TMUX)
+                let &t_8f = "\<Esc>[38;2;%lu;%lu;%lum"
+                let &t_8b = "\<Esc>[48;2;%lu;%lu;%lum"
+            endif
+            set termguicolors
+        endif
+        " 默认主题（silent! 防止极简安装缺少该 colorscheme）
+        silent! colorscheme pablo
         "colorscheme elflord
         "编辑区背景色 启用
-        hi Normal guibg=#99cc99 guifg=Black
+        silent! hi Normal guibg=#99cc99 guifg=Black
         "光标所在行背景色 启用
-        hi CursorLine guibg=#2d2d2d ctermbg=236 cterm=none
+        silent! hi CursorLine guibg=#2d2d2d ctermbg=236 cterm=none
         "hi CursorLine cterm=NONE ctermbg=darkred guibg=#66cc99 guifg=black ctermfg=white
         "行号背景色
-        hi LineNr guibg=#003366 guifg=#99ccff ctermbg=7777 ctermfg=blue
-        set t_Co=256
+        silent! hi LineNr guibg=#003366 guifg=#99ccff ctermbg=7777 ctermfg=blue
+        " 老终端回退到 256 色
+        if !has('termguicolors')
+            set t_Co=256
+        endif
 
         " SignColumn should match background
-        highlight clear SignColumn
+        silent! highlight clear SignColumn
         " Current line number row will have same background color in relative mode
-        highlight clear LineNr
+        silent! highlight clear LineNr
         " Remove highlight color from current line number
         "highlight clear CursorLineNr
         " if &diff
@@ -199,8 +229,18 @@
 
     " }
     " Other {
-        " 定义函数AutoSetFileHead，自动插入文件头
-        autocmd BufNewFile *.sh,*.php exec ":call AutoSetFileHead()"
+        if has('autocmd')
+        augroup vimrc_auto_commands
+            autocmd!
+            " 定义函数AutoSetFileHead，自动插入文件头
+            autocmd BufNewFile *.sh,*.php call AutoSetFileHead()
+            " 打开文件为上次打开的位置 if this not work ,make sure .viminfo is writable for you
+            autocmd BufReadPost * if line("'\"") > 1 && line("'\"") <= line("$") | exe "normal! g'\"" | endif
+            "配置文件.vimrc更改后自动重新载入使设置生效
+            autocmd BufWritePost .vimrc source ~/.vimrc
+        augroup END
+        endif
+
         function! AutoSetFileHead()
             "如果文件类型为.sh文件
             if &filetype == 'sh'
@@ -216,7 +256,7 @@
 
             normal G
             normal o
-        endfunc
+        endfunction
 
         " 删除行尾^M符号
         " 如果是很多行合并为一行了用 %s/\r/\r/g
@@ -225,18 +265,11 @@
         endfunction
 
         "去掉空格
-        func! DeleteTrailingWS()
+        function! DeleteTrailingWS()
             exe "normal mz"
             %s/\s\+$//ge
             exe "normal `z"
-        endfunc
-
-        " 打开文件为上次打开的位置 if this not work ,make sure .viminfo is writable for you
-        if has("autocmd")
-            au BufReadPost * if line("'\"") > 1 && line("'\"") <= line("$") | exe "normal! g'\"" | endif
-        endif
-        "配置文件.vimrc更改后自动重新载入使设置生效
-        autocmd! bufwritepost .vimrc source ~/.vimrc
+        endfunction
     " }
 
 " }
