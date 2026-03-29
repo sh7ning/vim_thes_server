@@ -204,35 +204,25 @@
         "set cursorcolumn
 
         set background=dark
-
-        " 现代终端（iTerm2/Apple Terminal）优先使用真彩
-        if has('termguicolors')
-            if !empty($TMUX)
-                let &t_8f = "\<Esc>[38;2;%lu;%lu;%lum"
-                let &t_8b = "\<Esc>[48;2;%lu;%lu;%lum"
-            endif
-            set termguicolors
-        else
-            set notermguicolors
-        endif
-
-        " 默认主题（silent! 防止极简安装缺少该 colorscheme）
+        " 默认主题
         silent! colorscheme pablo
         "colorscheme elflord
         "编辑区背景色 启用
-        silent! hi Normal guibg=#99cc99 guifg=Black ctermbg=114 ctermfg=16
+        silent! hi Normal guibg=#99cc99 guifg=Black
         "光标所在行背景色 启用
         silent! hi CursorLine guibg=#2d2d2d ctermbg=236 cterm=none
         "hi CursorLine cterm=NONE ctermbg=darkred guibg=#66cc99 guifg=black ctermfg=white
         "行号背景色
-        silent! hi LineNr guibg=#003366 guifg=#99ccff ctermbg=24 ctermfg=117
+        silent! hi LineNr guibg=#003366 guifg=#99ccff ctermbg=7777 ctermfg=blue
         " 老终端回退到 256 色
         if !has('termguicolors')
             set t_Co=256
         endif
 
-        " SignColumn 背景与正文保持一致，避免符号列颜色突兀
-        silent! hi SignColumn guibg=#99cc99 ctermbg=114
+        " SignColumn should match background
+        silent! highlight clear SignColumn
+        " Current line number row will have same background color in relative mode
+        silent! highlight clear LineNr
         " Remove highlight color from current line number
         "highlight clear CursorLineNr
         " if &diff
