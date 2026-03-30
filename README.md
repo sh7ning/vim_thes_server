@@ -53,7 +53,7 @@ Back up your existing configuration first, then install the version you want.
 cp ~/.vimrc ~/.vimrc_bak 2>/dev/null; curl -fsSL https://raw.githubusercontent.com/sh7ning/vim_thes_server/master/.vimrc -o ~/.vimrc
 ```
 
-### Install classic `.vimrc.classic`
+### Or Install classic `.vimrc.classic`
 
 ```bash
 cp ~/.vimrc ~/.vimrc_bak 2>/dev/null; curl -fsSL https://raw.githubusercontent.com/sh7ning/vim_thes_server/master/.vimrc.classic -o ~/.vimrc && mkdir -p ~/.vim_undo
