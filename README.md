@@ -6,6 +6,12 @@ sh7ne's server vim distribution.
 
 ### installation
 
+一个命令：
+
+```
+cp ~/.vimrc ~/.vimrc_bak; curl https://raw.githubusercontent.com/sh7ning/vim_thes_server/master/.vimrc -L > ~/.vimrc
+```
+
 1. backup your old .vimrc if it is necessary
 
 ```
