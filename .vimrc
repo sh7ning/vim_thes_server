@@ -2,7 +2,7 @@
     " sh7ne的vim server配置
     " https://github.com/sh7ning/vim_thes_server
     " 新建时间：2014-6-6
-    " 最后更新时间：2014-10-9
+    " 最后更新时间：2026-3-30
 " }
 
 " Environment {
@@ -52,17 +52,30 @@
             set linespace=0
         endif
 
-        " tab相关变更
-        " 设置Tab键的宽度        [等同的空格个数]
+        " tab相关变更 默认（后端）
+        " 设置Tab键的宽度 [等同的空格个数]
         set tabstop=4
         " 每一次缩进对应的空格数
         set shiftwidth=4
         " 按退格键时可以一次删掉 4 个空格
         set softtabstop=4
+        " 将Tab自动转化成空格 Tab，避免跨环境缩进宽度不一致, [需要输入真正的Tab键时，使用 Ctrl+V + Tab]
+        set expandtab
+
+        " 按文件类型覆盖缩进宽度；无 autocmd 支持时跳过，避免精简版 Vim 报错
+        if has('autocmd')
+            augroup MyIndentSettings
+            autocmd!
+
+            " 前端 & 配置
+            autocmd FileType json,yaml,javascript,typescript,html,css \
+                setlocal tabstop=2 shiftwidth=2 softtabstop=2
+
+            augroup END
+        endif
+        
         " 行首插入 Tab 时按 shiftwidth 计算缩进宽度
         set smarttab
-        " 将Tab自动转化成空格    [需要输入真正的Tab键时，使用 Ctrl+V + Tab]
-        set expandtab
         " 缩进时，取整 use multiple of shiftwidth when indenting with '<' and '>'
         set shiftround
 
@@ -106,6 +119,7 @@
         " 去掉错误时提示声音
         set noerrorbells
         set novisualbell
+        " 彻底关闭终端可视响铃
         set t_vb=
         " CursorHold 触发等待时间，降低后插件/状态刷新更及时
         set updatetime=300
@@ -127,18 +141,19 @@
 
         "没有保存的缓冲区可以自动被隐藏
         set hidden
+        " 告知 Vim 当前终端较快，减少部分界面刷新等待
         set ttyfast
 
-        " 系统剪贴板联动
+        " 系统剪贴板联动 (不需要)
         " macOS 下 '*' 和 '+' 最终都会落到系统剪贴板，使用 unnamed 即可
         " Linux 仅在图形环境（X11/Wayland）下启用 unnamedplus，避免无头服务器误判
-        if has('clipboard')
-            if g:is_macos
-                set clipboard=unnamed
-            elseif g:is_linux && (!empty($DISPLAY) || !empty($WAYLAND_DISPLAY))
-                set clipboard=unnamedplus
-            endif
-        endif
+        " if has('clipboard')
+        "     if g:is_macos
+        "         set clipboard=unnamed
+        "     elseif g:is_linux && (!empty($DISPLAY) || !empty($WAYLAND_DISPLAY))
+        "         set clipboard=unnamedplus
+        "     endif
+        " endif
 
         " 取消备份
         set nobackup
@@ -204,6 +219,7 @@
         set cursorline
         "set cursorcolumn
 
+        " 使用深色背景，便于主题选择正确的高亮分组
         set background=dark
         " 默认主题
         silent! colorscheme pablo
@@ -214,7 +230,8 @@
         silent! hi CursorLine guibg=#2d2d2d ctermbg=236 cterm=none
         "hi CursorLine cterm=NONE ctermbg=darkred guibg=#66cc99 guifg=black ctermfg=white
         " 行号背景色
-        silent! hi LineNr guibg=#003366 guifg=#99ccff ctermbg=7777 ctermfg=blue
+        " silent! hi LineNr guibg=#003366 guifg=#99ccff ctermbg=7777 ctermfg=blue
+        silent! hi LineNr guibg=#003366 guifg=#99ccff ctermbg=24 ctermfg=153
         " 老终端回退到 256 色
         if !has('termguicolors')
             set t_Co=256
