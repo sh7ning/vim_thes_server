@@ -68,12 +68,11 @@
             autocmd!
 
             " 前端 & 配置
-            autocmd FileType json,yaml,javascript,typescript,html,css \
-                setlocal tabstop=2 shiftwidth=2 softtabstop=2
+            autocmd FileType json,yaml,javascript,typescript,html,css setlocal tabstop=2 shiftwidth=2 softtabstop=2
 
             augroup END
         endif
-        
+
         " 行首插入 Tab 时按 shiftwidth 计算缩进宽度
         set smarttab
         " 缩进时，取整 use multiple of shiftwidth when indenting with '<' and '>'
@@ -258,13 +257,13 @@
         set pastetoggle=<F4>
         "php语法检测，因为安装了语法插件，所以不启用，如插件无效，可以手动开启
         "map <F3> :!php -l % <CR>
-        
+
         " 去掉^M
         "map <F5> :call StripTrailingBr()<CR>
-        
+
         " 去掉行尾空格
         "map <F6> :call DeleteTrailingWS()<CR>
-        "也可以设置为保存php的过程中自动进行处理 
+        "也可以设置为保存php的过程中自动进行处理
         "autocmd BufWrite *.php :call DeleteTrailingWS()
 
     " }
@@ -300,7 +299,7 @@
 
         " 删除行尾^M符号
         " 如果是很多行合并为一行了用 %s/\r/\r/g
-        function! StripTrailingBr()  
+        function! StripTrailingBr()
             silent! keepjumps keeppatterns %s/\r//g
         endfunction
 
@@ -313,4 +312,3 @@
     " }
 
 " }
-
